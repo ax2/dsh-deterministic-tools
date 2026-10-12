@@ -57,16 +57,16 @@ Agent 在需要「把这段 JSON 格式化」「这段文本里有什么不可�
 
 ## 安装
 
-预构建 tarball（推荐，无需构建步骤，避开 pnpm 的 `allowBuilds` 授权）：
+npm（已发布 `0.1.1`，推荐）：
 
 ```sh
-dsh plugin --profile web add https://github.com/ax2/dsh-deterministic-tools/releases/latest/download/dsh-deterministic-tools-0.1.1.tgz
+dsh plugin --profile web add dsh-deterministic-tools
 ```
 
-npm（尚未发布，计划中）：
+预构建 tarball（与 npm 上是同一份产物，适合离线或需要固定版本；同样无需构建步骤，也避开 pnpm 的 `allowBuilds` 授权）：
 
 ```sh
-dsh plugin --profile web add dsh-deterministic-tools   # 等 npm 发布后可用
+dsh plugin --profile web add https://github.com/ax2/dsh-deterministic-tools/releases/download/v0.1.1/dsh-deterministic-tools-0.1.1.tgz
 ```
 
 本地开发：不安装，直接挂载构建产物。
@@ -175,7 +175,7 @@ pnpm smoke                  # 用 lib/ 产物 + stub registry 验证 29 个工�
 ## 兼容性与风险
 
 - 官方插件 API 自称 **pre-stable，无冻结承诺**；本插件只依赖最稳定的两个面：`ctx.tools.register(defineTool(...))` 与 `apply(ctx, config)`。
-- **验证到什么程度（不夸大）**：`tsc --noEmit` 0 错误；35 个用例在真实 `@deepseek-ai/dsh-tools` 上跑通组装路径（含 registry 的参数校验）；`lib/` 产物被 `scripts/smoke-built.mjs` 加载并注册全部 29 个工具；`dsh --profile web --patch ./cordis.local-overlay.yml --dump-config` 在 `dsh 0.2.0-rc.2` 上合成成功；预构建 tarball 用 `pnpm add` 安装后能 `import` 并注册。**尚未做**：带 LLM 凭据的 `dsh headless` 真实对话端到端调用（本机 CLI 取不到凭据）。
+- **验证到什么程度（不夸大）**：`tsc --noEmit` 0 错误；35 个用例在真实 `@deepseek-ai/dsh-tools` 上跑通组装路径（含 registry 的参数校验）；`lib/` 产物被 `scripts/smoke-built.mjs` 加载并注册全部 29 个工具；`dsh --profile web --patch ./cordis.local-overlay.yml --dump-config` 在 `dsh 0.2.0-rc.2` 上合成成功；npm 上的 `0.1.1` 用 `dsh plugin --profile <scratch> add` 装进一个临时 profile 后，真实 `dsh` 启动把包括本包 29 个在内的全部工具 schema 发给了模型（会话日志里逐个核对过）。**尚未做**：带有效 LLM 凭据的完整一问一答（本机没有可用 API key，启动到发请求即 401）。
 - 正则工具无法中断 JS 回溯 ⇒ 用 `regexInputBytes`（默认 64 KiB）与 `maxPatternChars` 把风险框住，并在描述里写明。
 - `text_diff` 的精确匹配有单元格预算，超出会给出 `coarse: true`，不假装最小差异。
 
