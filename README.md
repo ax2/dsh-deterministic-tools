@@ -63,11 +63,13 @@ npm（推荐）：
 dsh plugin --profile web add dsh-deterministic-tools
 ```
 
-预构建 tarball（与 npm 上是同一份产物，适合离线或需要固定版本；同样无需构建步骤，也避开 pnpm 的 `allowBuilds` 授权）：
+预构建 tarball（与 npm 上是同一份产物，无需构建步骤，也避开 pnpm 的 `allowBuilds` 授权）：
 
 ```sh
-dsh plugin --profile web add https://github.com/ax2/dsh-deterministic-tools/releases/download/v0.1.2/dsh-deterministic-tools-0.1.2.tgz
+dsh plugin --profile web add https://github.com/ax2/dsh-deterministic-tools/releases/latest/download/dsh-deterministic-tools.tgz
 ```
+
+要固定版本就把 `latest/download/dsh-deterministic-tools.tgz` 换成 `download/v<version>/dsh-deterministic-tools-<version>.tgz`。
 
 本地开发：不安装，直接挂载构建产物。
 
@@ -175,7 +177,7 @@ pnpm smoke                  # 用 lib/ 产物 + stub registry 验证 29 个工�
 ## 兼容性与风险
 
 - 官方插件 API 自称 **pre-stable，无冻结承诺**；本插件只依赖最稳定的两个面：`ctx.tools.register(defineTool(...))` 与 `apply(ctx, config)`。
-- **验证到什么程度（不夸大）**：`tsc --noEmit` 0 错误；35 个用例在真实 `@deepseek-ai/dsh-tools` 上跑通组装路径（含 registry 的参数校验）；`lib/` 产物被 `scripts/smoke-built.mjs` 加载并注册全部 29 个工具；`dsh --profile web --patch ./cordis.local-overlay.yml --dump-config` 在 `dsh 0.2.0-rc.2` 上合成成功；npm 上的版本用 `dsh plugin --profile <scratch> add` 装进一个临时 profile 后，真实 `dsh` 启动把包括本包 29 个在内的全部工具 schema 发给了模型（会话日志里逐个核对过）。**尚未做**：带有效 LLM 凭据的完整一问一答（本机没有可用 API key，启动到发请求即 401）。
+- **验证到什么程度（不夸大）**：`tsc --noEmit` 0 错误；35 个用例在真实 `@deepseek-ai/dsh-tools` 上跑通组装路径（含 registry 的参数校验）；`lib/` 产物被 `scripts/smoke-built.mjs` 加载并注册全部 29 个工具；`dsh --profile web --patch ./cordis.local-overlay.yml --dump-config` 在 `dsh 0.2.0-rc.2` 上合成成功；npm 上的版本用 `dsh plugin --profile <scratch> add` 装进一个临时 profile 后，真实 `dsh` 启动把包括本包 29 个在内的全部工具 schema 发给了模型（会话日志里逐个核对过）。**真实对话也跑通了**：同一个临时 profile 接上本机 desktop profile 用的那条 LLM 路由（`tencent-token-plan`）后，模型在一个真实回合里主动调用了 `json_format`（`indent: 2`、`sort_keys: true`），拿回递归排序后的 JSON 与 `[note]` 页脚并原样复述（会话 `session-0a4eb911`）。**尚未做**：跨多个真实会话的调用统计（这属于 M3）。
 - 正则工具无法中断 JS 回溯 ⇒ 用 `regexInputBytes`（默认 64 KiB）与 `maxPatternChars` 把风险框住，并在描述里写明。
 - `text_diff` 的精确匹配有单元格预算，超出会给出 `coarse: true`，不假装最小差异。
 
