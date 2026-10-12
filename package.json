@@ -38,8 +38,7 @@
     "url": "https://github.com/ax2/dsh-deterministic-tools/issues"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "keywords": [
     "dsh",
