@@ -1,0 +1,6 @@
+# Bundle layer contributed by dsh-deterministic-tools.
+# Installing the package appends this bundle to a profile's dsh.profile.bundles;
+# the row below mounts the plugin's `apply` (package root main).
+- insert:
+    - id: deterministic-tools
+      name: dsh-deterministic-tools

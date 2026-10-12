@@ -1,0 +1,4 @@
+# Local smoke overlay: mounts the built plugin without installing it into a profile.
+- insert:
+    - id: deterministic-tools-local
+      name: 'D:/dsh/dsh-deterministic-tools/lib/index.js'
