@@ -1,6 +1,6 @@
 {
   "name": "dsh-deterministic-tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Deterministic, offline, bounded tools for DeepSeek Harness: JSON/YAML/CSV, text diff, regex, encodings, hashes, JWT/CIDR/color inspection.",
   "type": "module",
   "main": "lib/index.js",
@@ -77,3 +77,4 @@
     "yaml": "2.8.1"
   }
 }
+
