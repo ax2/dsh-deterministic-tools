@@ -9,6 +9,34 @@ MIT License · DSH 0.2.0-rc.2 验证通过 · Node ≥ 20.10
 
 ---
 
+## 快速开始
+
+[![npm](https://img.shields.io/npm/v/dsh-deterministic-tools)](https://www.npmjs.com/package/dsh-deterministic-tools)
+![tools](https://img.shields.io/badge/tools-29-blue) ![tests](https://img.shields.io/badge/tests-35%20passing-brightgreen) ![network](https://img.shields.io/badge/network-none-informational) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+
+```sh
+dsh plugin --profile web add dsh-deterministic-tools
+```
+
+装完**重启应用**（bundle 列表是启动时读的）。想一次装齐四个插件（含 [jvm-doctor](https://github.com/ax2/dsh-jvm-doctor) / [py-doctor](https://github.com/ax2/dsh-py-doctor) / [win-native](https://github.com/ax2/dsh-win-native)）用 [`dsh-zidev-toolbox`](https://github.com/ax2/dsh-zidev-toolbox)；**别和单独安装混用**（会重复注册同名工具）。
+
+**15 秒看效果** —— 说"校验 `{"a":1,}`，要精确行列"，模型调用 `json_validate`，拿回（实测输出）：
+
+```json
+{ "valid": false,
+  "error": { "message": "expected a double-quoted property name but found '}'", "line": 1, "column": 9, "position": 8 },
+  "top_level_type": "unknown" }
+```
+
+**为什么不让模型自己写 pwsh？** 实测里它确实写得出（`ConvertFrom-Json` 也能报错），但：
+- **一次就对**：固定实现 + 35 个测试，而不是每次和引号、编码、PowerShell 版本搏斗；
+- **边界明确**：结构化输入超预算**拒绝**（`INPUT_TOO_LARGE`），文本截断按 code point 并标 `truncated`；
+- **可组合**：`{ result, meta }` 回执直接进下一步，不用模型解析自由文本。
+
+相邻插件：[dsh-jvm-doctor](https://github.com/ax2/dsh-jvm-doctor)（JVM 生产报告）· [dsh-py-doctor](https://github.com/ax2/dsh-py-doctor)（Python/Django）· [dsh-win-native](https://github.com/ax2/dsh-win-native)（Windows 编码/路径/netstat）· [dsh-zidev-toolbox](https://github.com/ax2/dsh-zidev-toolbox)（一条命令装齐，共 46 个工具）
+
+---
+
 ## 为什么需要它
 
 Agent 在需要「把这段 JSON 格式化」「这段文本里有什么不可见字符」「这个 CIDR 覆盖哪些地址」「这个 base64 解出来是不是 UTF-8」时，目前只能：
