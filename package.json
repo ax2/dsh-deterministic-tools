@@ -26,7 +26,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test test/*.test.ts",
     "smoke": "node scripts/smoke-built.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run smoke"
+    "check": "npm run typecheck && npm test && npm run build && npm run smoke",
+    "prepublishOnly": "npm run check"
   },
   "repository": {
     "type": "git",

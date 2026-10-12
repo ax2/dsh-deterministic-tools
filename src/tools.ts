@@ -400,7 +400,7 @@ export function createTools(opts: ToolFactoryOptions) {
         name: 'lines_process',
         group: 'text',
         description:
-          'Apply one deterministic line operation: dedupe (keeps first occurrence), trim, drop_empty, compact (collapse inner whitespace), sort, sort_desc, reverse or number. Reports how many lines were removed.',
+          'Apply one deterministic line operation: dedupe (keeps first occurrence), trim, drop_empty, compact (collapse inner whitespace), sort, sort_desc, reverse or number. Reports how many lines were removed, whether the input ended with a newline, and the input EOL style; output is always LF.',
         parameters: {
           text: TEXT_INPUT,
           op: { type: 'string', required: true, enum: LINE_OPS, description: 'Operation to apply.' },
@@ -412,17 +412,31 @@ export function createTools(opts: ToolFactoryOptions) {
             text: { type: 'string', required: true },
             lines_in: { type: 'integer', required: true },
             lines_out: { type: 'integer', required: true },
+            trailing_newline: { type: 'boolean', required: true },
+            eol_in: { type: 'string', required: true },
           },
         },
         run: (args, limits) => {
           const text = String(args.text)
           const bytesIn = assertWithinInput(text, limits.maxInputBytes)
           const op = String(args.op) as LineOp
-          const input = splitLines(text).lines.length
+          const split = splitLines(text)
           const { lines } = processLines(text, op)
           const notes: string[] = []
-          const { text: out, truncated } = boundedText(lines.join('\n'), limits, notes)
-          const result = { text: out, lines_in: input, lines_out: lines.length }
+          // A trailing newline is part of the document; reproduce it instead of
+          // silently dropping it, and say what the input's own EOL style was.
+          const rendered = lines.length === 0 ? '' : lines.join('\n') + (split.trailingNewline ? '\n' : '')
+          const { text: out, truncated } = boundedText(rendered, limits, notes)
+          if (split.eol === 'crlf' || split.eol === 'cr' || split.eol === 'mixed') {
+            notes.push(`input used ${split.eol} line endings; output uses LF`)
+          }
+          const result = {
+            text: out,
+            lines_in: split.lines.length,
+            lines_out: lines.length,
+            trailing_newline: split.trailingNewline,
+            eol_in: split.eol,
+          }
           return { result, meta: { bytesIn, bytesOut: utf8Bytes(JSON.stringify(result)), truncated, notes } }
         },
       },

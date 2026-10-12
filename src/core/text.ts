@@ -14,15 +14,17 @@ export interface SplitText {
   lines: string[]
   /** Dominant end-of-line style, or `mixed`/`none`. */
   eol: EolStyle
+  /** True when the document ended with a line terminator, so `lines` alone cannot reproduce it. */
+  trailingNewline: boolean
 }
 
 /**
  * Split text into lines while recording the EOL style.
  * @param text - source document.
- * @returns lines plus the observed EOL style.
+ * @returns lines, the observed EOL style, and whether the text ended with a newline.
  */
 export function splitLines(text: string): SplitText {
-  if (text.length === 0) return { lines: [], eol: 'none' }
+  if (text.length === 0) return { lines: [], eol: 'none', trailingNewline: false }
   const hasCrlf = text.includes('\r\n')
   const withoutCrlf = hasCrlf ? text.replaceAll('\r\n', '\n') : text
   const hasCr = withoutCrlf.includes('\r')
@@ -30,8 +32,9 @@ export function splitLines(text: string): SplitText {
   const eol: EolStyle = hasCrlf && !hasCr ? 'crlf' : hasCr && hasLf ? 'mixed' : hasCr ? 'cr' : hasLf ? 'lf' : 'none'
   const normalized = withoutCrlf.replaceAll('\r', '\n')
   const lines = normalized.split('\n')
-  if (lines.length > 0 && lines[lines.length - 1] === '' && /\r?\n$|\r$/.test(text)) lines.pop()
-  return { lines, eol }
+  const trailingNewline = lines.length > 0 && lines[lines.length - 1] === '' && /\r?\n$|\r$/.test(text)
+  if (trailingNewline) lines.pop()
+  return { lines, eol, trailingNewline }
 }
 
 /** Text statistics for one document. */

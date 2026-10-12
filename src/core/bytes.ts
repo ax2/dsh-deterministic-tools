@@ -50,11 +50,37 @@ export class UnsupportedOptionError extends Error {
   }
 }
 
+/**
+ * Raised when text cannot be represented in the target encoding, such as an
+ * unpaired UTF-16 surrogate. The platform error for this case is a bare
+ * `URIError: URI malformed`, which tells the model nothing actionable.
+ */
+export class MalformedTextError extends Error {
+  /** Stable, machine-readable failure code. */
+  readonly code = 'MALFORMED_TEXT'
+  /** UTF-16 index of the offending code unit. */
+  readonly position: number
+
+  /**
+   * @param position - UTF-16 index of the offending code unit.
+   * @param codeUnit - the unpaired surrogate value.
+   * @param what - short label for the operation that refused the text.
+   */
+  constructor(position: number, codeUnit: number, what = 'text') {
+    const code = 'U+' + codeUnit.toString(16).toUpperCase().padStart(4, '0')
+    super(
+      `${what} contains an unpaired UTF-16 surrogate (${code}) at index ${position}, so it cannot be percent-encoded. ` +
+        'Repair the text (for example by decoding the original bytes as UTF-8) and retry; nothing was encoded.',
+    )
+    this.name = 'MalformedTextError'
+    this.position = position
+  }
+}
+
 /** UTF-8 byte length of a string. */
 export function utf8Bytes(text: string): number {
   return Buffer.byteLength(text, 'utf8')
 }
-
 /** UTF-8 byte length of any canonical JSON value. */
 export function jsonBytes(value: unknown): number {
   return utf8Bytes(JSON.stringify(value) ?? '')

@@ -107,7 +107,7 @@ dsh --profile web --patch ./cordis.local-overlay.yml
 | 工具 | 说明 |
 |---|---|
 | `text_stats` | 字节 / UTF-16 / code point / 行 / 词 / CJK / 非 ASCII / EOL 风格 |
-| `lines_process` | dedupe、trim、drop_empty、compact、sort、sort_desc、reverse、number |
+| `lines_process` | dedupe、trim、drop_empty、compact、sort、sort_desc、reverse、number；保留输入的结尾换行、报告输入 EOL 风格（输出统一 LF） |
 | `case_convert` | camel / pascal / snake / upper_snake / kebab / dot / title / lower / upper |
 | `text_diff` | 行级统一格式 hunk（带行号）；超出 LCS 单元格预算时降级并标 `coarse: true` |
 | `regex_find` | 编号/命名捕获组、字符偏移、1-based 行号，匹配数有界 |
@@ -128,7 +128,7 @@ dsh --profile web --patch ./cordis.local-overlay.yml
 |---|---|
 | `base64_encode` / `base64_decode` | 标准与 URL-safe 字母表；解码前先校验字母表和 padding；非法 UTF-8 **明确上报** |
 | `hex_encode` / `hex_decode` | 可选大小写与分隔符；容忍 `:`/`-`/`,`/空白 |
-| `url_encode` / `url_decode` | component / form / path / full 四种模式；畸形 `%` 序列计数上报 |
+| `url_encode` / `url_decode` | component / form / path / full 四种模式；畸形 `%` 序列计数上报；孤立代理项（unpaired surrogate）显式拒绝并给出下标 |
 | `url_inspect` | 拆解 scheme/host/port/path/query/fragment + 解码参数 + 风险提示（内嵌凭据、明文 HTTP、IDN） |
 | `hash_text` | sha256 / sha512 / sha1 / md5，hex 或 base64，支持 base64 二进制输入 |
 
@@ -148,11 +148,18 @@ dsh --profile web --patch ./cordis.local-overlay.yml
 ```sh
 pnpm install
 pnpm typecheck              # tsc --noEmit，0 错误
-node --test test/           # 27 个用例，覆盖全部 29 个工具的组装路径
+node --test test/           # 35 个用例，覆盖全部 29 个工具的组装路径
 pnpm build                  # 产出 lib/（ESM + .d.ts，导入已改写为 .js）
+pnpm smoke                  # 用 lib/ 产物 + stub registry 验证 29 个工具全部注册
 ```
 
-测试直接跑 TypeScript（Node 22+ 的类型剥离），并且是**组装级**的：先 `definition.execute(args, exec)`，再用 `definition.output.render()` 渲染，断言 `result` / `meta` / 页脚。参数 DSL 由 registry 在 `execute` 之前校验，测试里也覆盖了这一点。
+测试分三类：
+
+1. **组装路径**：`definition.execute(args, exec)` → `definition.output.render()`，断言 `result` / `meta` / 页脚；
+2. **契约**：每个工具的 schema、描述长度、注册表参数校验（非法 enum 由 registry 在 `execute` 之前拒绝）；
+3. **性质测试**（`test/properties.test.ts`，固定种子可复现）：自写 JSON 扫描器与 `JSON.parse` 的差分对照（400 组含随机变异的语料）、格式化的幂等性与值保持、base64/hex/百分号编码/CSV/进制/时间戳的往返、行操作幂等性。
+
+> 这组性质测试在 v0.1 期间抓到过一个真实缺陷：`lines_process` 会丢掉输入结尾的换行（`"a\nb\n"` → `"a\nb"`）。现在它的结果里带 `trailing_newline` 与 `eol_in`，输出忠实复现结尾换行，跨平台换行会说清「输出统一为 LF」。
 
 ## 兼容性与风险
 

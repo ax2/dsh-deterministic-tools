@@ -127,9 +127,24 @@ test('text_diff returns unified hunks with line numbers', async () => {
 })
 
 test('lines_process and case_convert are deterministic', async () => {
+  // 'b\na\nb\n\n' is four lines ('b', 'a', 'b', '') and ends with a terminator,
+  // so dedupe keeps the empty last line and the trailing newline is reproduced.
   const deduped = await run('lines_process', { text: 'b\na\nb\n\n', op: 'dedupe' })
-  assert.equal(deduped.result.text, 'b\na\n')
+  assert.equal(deduped.result.text, 'b\na\n\n')
   assert.equal(deduped.result.lines_in, 4)
+  assert.equal(deduped.result.lines_out, 3)
+  assert.equal(deduped.result.trailing_newline, true)
+  assert.equal(deduped.result.eol_in, 'lf')
+
+  const noTrailer = await run('lines_process', { text: 'b\na\nb', op: 'dedupe' })
+  assert.equal(noTrailer.result.text, 'b\na')
+  assert.equal(noTrailer.result.trailing_newline, false)
+
+  const crlf = await run('lines_process', { text: 'b\r\na\r\n', op: 'trim' })
+  assert.equal(crlf.result.text, 'b\na\n')
+  assert.equal(crlf.result.eol_in, 'crlf')
+  assert.equal(crlf.result.trailing_newline, true)
+  assert.ok((crlf.meta.notes as string[]).some((note) => note.includes('output uses LF')))
 
   const kebab = await run('case_convert', { text: 'HTTPServerConfig', mode: 'kebab' })
   assert.equal(kebab.result.text, 'http-server-config')

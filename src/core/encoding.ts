@@ -3,7 +3,7 @@
  * @module dsh-deterministic-tools/core/encoding
  */
 import { createHash } from 'node:crypto'
-import { UnsupportedOptionError } from './bytes.ts'
+import { MalformedTextError, UnsupportedOptionError } from './bytes.ts'
 
 /** Digest algorithms this package exposes. */
 export const HASH_ALGORITHMS = ['sha256', 'sha512', 'sha1', 'md5'] as const
@@ -95,6 +95,7 @@ export type UrlEncodeMode = (typeof URL_ENCODE_MODES)[number]
  * @param mode - `component` uses encodeURIComponent, `form` uses `+` for spaces, `path` and `full` keep separators.
  */
 export function urlEncode(text: string, mode: UrlEncodeMode): string {
+  assertWellFormed(text)
   switch (mode) {
     case 'component':
       return encodeURIComponent(text)
@@ -106,6 +107,26 @@ export function urlEncode(text: string, mode: UrlEncodeMode): string {
       return encodeURI(text)
     default:
       throw new UnsupportedOptionError('mode', mode, URL_ENCODE_MODES)
+  }
+}
+
+/**
+ * Refuse text containing an unpaired surrogate before the platform does.
+ * @param text - text about to be encoded.
+ * @param what - label used in the error message.
+ */
+export function assertWellFormed(text: string, what = 'text'): void {
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index)
+    if (code >= 0xd800 && code <= 0xdbff) {
+      const next = text.charCodeAt(index + 1)
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        index += 1
+        continue
+      }
+      throw new MalformedTextError(index, code, what)
+    }
+    if (code >= 0xdc00 && code <= 0xdfff) throw new MalformedTextError(index, code, what)
   }
 }
 
