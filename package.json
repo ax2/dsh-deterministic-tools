@@ -1,6 +1,6 @@
 {
   "name": "dsh-deterministic-tools",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "DSH plugin: 29 deterministic, offline tools for JSON validation with exact line/column, JSONPath queries, YAML/CSV conversion, text diff, regex capture, encodings, hashes, Unicode, CIDR, JWT structure and timestamps. Every call returns a { result, meta } receipt; over-budget input is refused, not truncated.",
   "type": "module",
   "main": "lib/index.js",

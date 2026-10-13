@@ -18,7 +18,7 @@ MIT License · DSH 0.2.0-rc.2 验证通过 · Node ≥ 20.10
 dsh plugin --profile web add dsh-deterministic-tools
 ```
 
-装完**重启应用**（bundle 列表是启动时读的）。想一次装齐四个插件（含 [jvm-doctor](https://github.com/ax2/dsh-jvm-doctor) / [py-doctor](https://github.com/ax2/dsh-py-doctor) / [win-native](https://github.com/ax2/dsh-win-native)）用 [`@ax2zicode/dsh-dev-toolbox`](https://github.com/ax2/dsh-dev-toolbox)；**别和单独安装混用**（会重复注册同名工具）。
+装完**重启应用**（bundle 列表是启动时读的）。想一次装齐四个插件（含 [jvm-doctor](https://github.com/ax2/dsh-jvm-doctor) / [py-doctor](https://github.com/ax2/dsh-py-doctor) / [win-native](https://github.com/ax2/dsh-win-native)）用 [`dsh-toolbox-bundle`](https://github.com/ax2/dsh-toolbox-bundle)；**别和单独安装混用**（会重复注册同名工具）。
 
 **家族总览**：[zicode.com/software](https://zicode.com/software/) 是四个插件、合装包与桌面软件的统一入口。
 
@@ -35,7 +35,7 @@ dsh plugin --profile web add dsh-deterministic-tools
 - **边界明确**：结构化输入超预算**拒绝**（`INPUT_TOO_LARGE`），文本截断按 code point 并标 `truncated`；
 - **可组合**：`{ result, meta }` 回执直接进下一步，不用模型解析自由文本。
 
-相邻插件：[dsh-jvm-doctor](https://github.com/ax2/dsh-jvm-doctor)（JVM 生产报告）· [dsh-py-doctor](https://github.com/ax2/dsh-py-doctor)（Python/Django）· [dsh-win-native](https://github.com/ax2/dsh-win-native)（Windows 编码/路径/netstat）· [dsh-dev-toolbox](https://github.com/ax2/dsh-dev-toolbox)（一条命令装齐，共 46 个工具）
+相邻插件：[dsh-jvm-doctor](https://github.com/ax2/dsh-jvm-doctor)（JVM 生产报告）· [dsh-py-doctor](https://github.com/ax2/dsh-py-doctor)（Python/Django）· [dsh-win-native](https://github.com/ax2/dsh-win-native)（Windows 编码/路径/netstat）· [dsh-toolbox-bundle](https://github.com/ax2/dsh-toolbox-bundle)（一条命令装齐，共 46 个工具）
 
 ---
 
